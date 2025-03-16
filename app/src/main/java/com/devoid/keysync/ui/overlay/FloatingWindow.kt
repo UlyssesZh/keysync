@@ -227,6 +227,7 @@ fun ItemsContainer(
                                 onRemove(item.id)
                             },
                             onClick = { keyFocusRequester.requestFocus() },
+                            borderColor = if (hasFocus) Color.Cyan else MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .onSizeChanged {
                                     item.size = it.width
