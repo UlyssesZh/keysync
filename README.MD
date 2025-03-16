@@ -30,16 +30,21 @@ KeySync is an Android app that allows users to play games using an external keyb
 2. Select or create a key mapping profile.
 3. Launch your game and enjoy enhanced controls.
 
+- ### Toggle Shooting Mode
+    In Fps or Other Aim based games you might want to use "Shooting Mode" Draggable item **to Switch between Mouse pointer and in game aim** by default you can use **MMB (Middle mouse button)** to toggle Shooting mode.
+
 ## Permissions
 
 - **Shizuku Access** - Required to simulate touch events.
 - **Overlay Permission** - Needed to display touch indicators.
  
 ## Screenshots
-![screenshot](/app/screenshots/20250316_142034.jpg)
-![Screenshot](https://github.com/user-attachments/assets/2f2c6c94-8c08-4aef-8808-fe35b515743b)
-![Screenshot](https://github.com/user-attachments/assets/9b316f00-d2ae-45ec-bed1-3c75b507149c)
-![Screenshot](https://github.com/user-attachments/assets/b20e5014-cb2b-4472-82f6-43af84f2310c)
+
+
+
+![Screenshot](/app/screenshots/20250316_142034.jpg)
+![Screenshot](app/screenshots/20250316_142134.jpg)
+![Screenshot](app/screenshots/20250316_142553.jpg)
 
 
 ## Disclaimer
