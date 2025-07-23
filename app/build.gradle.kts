@@ -15,8 +15,8 @@ android {
         applicationId = "com.devoid.keysync"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0-beta"
+        versionCode = 2
+        versionName = "1.1-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,7 +37,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-
     }
     buildFeatures {
         compose = true
