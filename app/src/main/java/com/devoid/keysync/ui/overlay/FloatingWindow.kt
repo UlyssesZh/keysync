@@ -129,7 +129,8 @@ fun ItemsContainer(
             .fillMaxSize()
     ) {
         containerItems.forEach { item ->
-            Log.i("ItemsContainer", "ItemsContainer: added item: $item")
+            Log.i("ItemsContainerCompose", "ItemsContainer: added item: $item")
+
             var position by remember(item.id) { mutableStateOf(item.position) }
             var scale by remember(item.id) { mutableFloatStateOf(if (item is DraggableItem.WASDGroup) item.scale else appConfig.buttonScale) }
             if (item is DraggableItem.CancelableKey) {
@@ -227,7 +228,7 @@ fun ItemsContainer(
                                 onRemove(item.id)
                             },
                             onClick = { keyFocusRequester.requestFocus() },
-                            borderColor = if (hasFocus) Color.Cyan else MaterialTheme.colorScheme.primary,
+                            borderColor = if (hasFocus) Color.Cyan else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .onSizeChanged {
                                     item.size = it.width
@@ -283,10 +284,12 @@ fun ItemsContainer(
                         when (item.type) {
                             DraggableItemType.FIRE -> {
                                 FireKey(modifier = Modifier
-                                    .onSizeChanged { onSizeChangeListener(it) }) {
+                                    .onSizeChanged { onSizeChangeListener(it) })
+                                {
                                     onRemove(item.id)
                                 }
                             }
+
                             DraggableItemType.SHOOTING_MODE -> {
                                 MousePointer(modifier = Modifier.onSizeChanged {
                                     onSizeChangeListener(it)
@@ -294,8 +297,16 @@ fun ItemsContainer(
                                     onRemove(item.id)
                                 }
                             }
+
                             DraggableItemType.SCOPE -> {
-                                IconKey(modifier = Modifier, removable = true, onRemove = {onRemove(item.id)}, onClick = null, borderColor = MaterialTheme.colorScheme.primary) {
+                                IconKey(
+                                    modifier =  Modifier
+                                        .onSizeChanged { onSizeChangeListener(it) },
+                                    removable = true,
+                                    onRemove = { onRemove(item.id) },
+                                    onClick = null,
+                                    borderColor = MaterialTheme.colorScheme.primary
+                                ) {
                                     Image(
                                         modifier = Modifier
                                             .fillMaxSize(),
@@ -305,7 +316,8 @@ fun ItemsContainer(
                                     )
                                 }
                             }
-                            else->{}
+
+                            else -> {}
                         }
                     }
 

@@ -19,6 +19,7 @@ import androidx.lifecycle.viewModelScope
 import com.devoid.keysync.data.local.DataStoreManager
 import com.devoid.keysync.model.AppConfig
 import com.devoid.keysync.model.DraggableItem
+import com.devoid.keysync.service.FloatingBubbleService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,7 @@ class MainActivityViewModel @Inject constructor(
     private val dataStoreManager: DataStoreManager
 ) :
     ViewModel(), Shizuku.OnRequestPermissionResultListener {
+    private val TAG = "MainActivityViewModel"
     private val SHIZUKU_REQ_CODE = 10
     private val _shizukuState = MutableStateFlow<UiState>(UiState.ShizukuNotRunning)
     val shizukuState = _shizukuState.asStateFlow()
@@ -128,9 +130,13 @@ class MainActivityViewModel @Inject constructor(
             .filter { it.applicationInfo!!.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
     }
 
-    fun getPackageName(packageName: String): String {
-        val packageInfo = context.packageManager.getApplicationInfo(packageName, 0)
-        return context.packageManager.getApplicationLabel(packageInfo).toString()
+    fun getPackageLabel(packageName: String): String {
+        try {
+            val packageInfo = context.packageManager.getApplicationInfo(packageName, 0)
+            return context.packageManager.getApplicationLabel(packageInfo).toString()
+        }catch (e:Exception){
+            return "Not found"
+        }
     }
 
     private fun getConnectedExternalDevices() {
@@ -185,7 +191,11 @@ class MainActivityViewModel @Inject constructor(
 
     suspend fun getPackageIcon(packageName: String): Drawable {
         return withContext(Dispatchers.IO) {
-            return@withContext context.packageManager.getApplicationIcon(packageName)
+            try {
+                return@withContext   context.packageManager.getApplicationIcon(packageName)
+            }catch (e:Exception){
+                return@withContext context.getDrawable(R.drawable.apk_document)!!
+            }
         }
     }
 
@@ -233,4 +243,29 @@ class MainActivityViewModel @Inject constructor(
         Log.i("MainActivityViewModel", "onCleared: main viewModelCleared ")
     }
 
+    fun launchPackage(packageName: String,packageManager: PackageManager,isServiceRunning:Boolean) {
+        try {
+            val packageIntent =
+                packageManager.getLaunchIntentForPackage(packageName)
+            packageIntent?.let {
+                it.flags =
+                    Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+            }
+            context.startActivity(packageIntent)
+            if (!isServiceRunning) {
+                launchFloatingBubbleService(packageName)
+            }
+        }catch (e:Exception){
+            //failed to launch package
+            Log.e(TAG,"failed to launch package",e)
+        }
+    }
+    private fun launchFloatingBubbleService(packageName: String) {
+        val serviceIntent = Intent(
+            context,
+            FloatingBubbleService::class.java
+        )
+        serviceIntent.putExtra(FloatingBubbleService.INTENT_EXTRA_PACAKAGE, packageName)
+        context.startForegroundService(serviceIntent)
+    }
 }

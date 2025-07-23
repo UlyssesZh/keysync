@@ -182,7 +182,7 @@ fun PackagesLayout(
                     viewModel.getPackageIcon(packageName)
                 }
             }
-            val appName = viewModel.getPackageName(packageName)
+            val appName = viewModel.getPackageLabel(packageName)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 SelectableAppIcon(
                     modifier = Modifier.size(60.dp),
@@ -200,7 +200,6 @@ fun PackagesLayout(
                     color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
                 )
             }
-
         }
     }
 }
@@ -216,203 +215,203 @@ fun MainScreen(
     onNavigateToSettings:()->Unit,
     onPackageIconClick:(String)->Unit
 ) {
-        val selectedPackages = remember { mutableStateMapOf<Int, Boolean>() }
-        val packages by viewModel.addedPackages.collectAsState()
-        val sheetState = rememberModalBottomSheetState()
-        var isBottomSheetVisible by remember { mutableStateOf(false) }
-        val connectedDevices by viewModel.connectedDevices.collectAsState()
-        var showBottomSheetContent by remember { mutableStateOf(false) }
+    val selectedPackages = remember { mutableStateMapOf<Int, Boolean>() }
+    val packages by viewModel.addedPackages.collectAsState()
+    val sheetState = rememberModalBottomSheetState()
+    var isBottomSheetVisible by remember { mutableStateOf(false) }
+    val connectedDevices by viewModel.connectedDevices.collectAsState()
+    var showBottomSheetContent by remember { mutableStateOf(false) }
 
-        Scaffold(
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
-            },
-            topBar = {
-                val isPrimaryContentVisible by remember { derivedStateOf { selectedPackages.size == 0 } }
-                var isTopBarExpanded by remember { mutableStateOf(false) }
-                val animatedRotation by animateFloatAsState(
-                    targetValue = if (isTopBarExpanded) -90f else 0f,
-                    label = "rotation"
-                )
-                DualTopBar(
-                    modifier = Modifier
-                        .padding(16.dp),
-                    isPrimaryVisible = isPrimaryContentVisible,
-                    isPrimaryExpanded = isTopBarExpanded,
-                    primaryContent = {
-                        Row {
-                            Text(
-                                "Connected Devices:",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                            Spacer(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            )
-                            Text(
-                                modifier = Modifier.padding(end = 16.dp),
-                                text = "${connectedDevices.size} Devices",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-                            )
-                            Icon(
-                                Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                                modifier = Modifier.rotate(animatedRotation),
-                                contentDescription = null
-                            )
-                        }
-                    },
-                    primaryExpandedContent = {
-                        LazyColumn(Modifier.padding(top = 8.dp)) {
-                            connectedDevices.forEach { (key, value) ->
-                                item(key = key) {
-                                    HorizontalDivider()
-                                    Row(Modifier.padding(8.dp)) {
-                                        Text("•", fontSize = 20.sp, color = Color.Green)
-                                        Text(
-                                            value,
-                                            Modifier.padding(start = 16.dp),
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontWeight = FontWeight.Medium,
-                                            maxLines = 2
-                                        )
-                                    }
-
-                                }
-                            }
-                        }
-                    },
-                    secondaryContent = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                "Selected: ${selectedPackages.size}",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Spacer(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            )
-
-                            Icon(
-                                Icons.Rounded.Delete,
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .clickable {
-                                        viewModel.removePackages(selectedPackages.keys)
-                                        selectedPackages.clear()
-                                    }
-                                    .padding(4.dp),
-                                contentDescription = "Delete Selected Items",
-                                tint = MaterialTheme.colorScheme.tertiary)
-                        }
-                    }) {
-                    if (isPrimaryContentVisible) {
-                        isTopBarExpanded = !isTopBarExpanded
-                    }
-                }
-            },
-            bottomBar = {
-                BottomAppBar(actions = {
-                    Text(
-                        modifier = Modifier.padding(start = 16.dp),
-                        text = appName,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    )
-                    IconButton(onClick = onNavigateToSettings) {
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+        topBar = {
+            val isPrimaryContentVisible by remember { derivedStateOf { selectedPackages.size == 0 } }
+            var isTopBarExpanded by remember { mutableStateOf(false) }
+            val animatedRotation by animateFloatAsState(
+                targetValue = if (isTopBarExpanded) -90f else 0f,
+                label = "rotation"
+            )
+            DualTopBar(
+                modifier = Modifier
+                    .padding(16.dp),
+                isPrimaryVisible = isPrimaryContentVisible,
+                isPrimaryExpanded = isTopBarExpanded,
+                primaryContent = {
+                    Row {
+                        Text(
+                            "Connected Devices:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        )
+                        Text(
+                            modifier = Modifier.padding(end = 16.dp),
+                            text = "${connectedDevices.size} Devices",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                        )
                         Icon(
-                            Icons.Rounded.Settings,
-                            contentDescription = "Advanced Setting"
+                            Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                            modifier = Modifier.rotate(animatedRotation),
+                            contentDescription = null
                         )
                     }
-
-                    Spacer(Modifier.width(32.dp))
-                }, floatingActionButton = {
-                    FloatingActionButton(onClick = {
-                        isBottomSheetVisible = true
-                    }) {
-                        Icon(Icons.Rounded.Add, contentDescription = "Add app")
-                    }
-                })
-            }
-        ) { contentPadding ->
-            Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(contentPadding),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                PackagesLayout(packages = packages,
-                    viewModel = viewModel,
-                    isSelected = {
-                        selectedPackages[it] ?: false
-                    },
-                    onLongClick = {
-                        selectedPackages[it] = true
-                    },
-                    onClick = { position ->
-                        if (selectedPackages[position] != null) {
-                            selectedPackages.remove(position)
-                            return@PackagesLayout
-                        }
-                        if (selectedPackages.size > 0) {
-                            selectedPackages[position] = true
-                            return@PackagesLayout
-                        }
-                        onPackageIconClick(packages[position])
-                    })
-                if (isBottomSheetVisible) {
-                    ModalBottomSheet(
-                        modifier = Modifier.fillMaxHeight(),
-                        onDismissRequest = {
-                            isBottomSheetVisible = false
-                            showBottomSheetContent = false
-                        }, sheetState = sheetState
-                    ) {
-                        var installedPackages by remember { mutableStateOf<List<String>?>(null) }
-
-                        LaunchedEffect(sheetState.currentValue, sheetState.targetValue) {
-                            if ((sheetState.currentValue == SheetValue.PartiallyExpanded ||
-                                        sheetState.currentValue == SheetValue.Expanded) &&
-                                !showBottomSheetContent
-                            ) {
-                                installedPackages =
-                                    viewModel.getInstalledPackages()
-                                        .map { it.packageName }
-                                delay(500)
-                                showBottomSheetContent = true
-                            }
-                        }
-                        if (showBottomSheetContent) {
-                            installedPackages?.let {
-                                Column {
-                                    Text(modifier=Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),text = "Add Games:", style = MaterialTheme.typography.titleLarge)
-                                    PackagesLayout(
-                                        packages = it,
-                                        viewModel = viewModel,
-                                        onLongClick = {},
-                                        onClick = { position ->
-                                            viewModel.addPackage(it[position])
-                                            isBottomSheetVisible = false
-                                            showBottomSheetContent = false
-                                        })
+                },
+                primaryExpandedContent = {
+                    LazyColumn(Modifier.padding(top = 8.dp)) {
+                        connectedDevices.forEach { (key, value) ->
+                            item(key = key) {
+                                HorizontalDivider()
+                                Row(Modifier.padding(8.dp)) {
+                                    Text("•", fontSize = 20.sp, color = Color.Green)
+                                    Text(
+                                        value,
+                                        Modifier.padding(start = 16.dp),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.Medium,
+                                        maxLines = 2
+                                    )
                                 }
-                            }
-                        } else {
-                            CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
-                        }
 
+                            }
+                        }
                     }
+                },
+                secondaryContent = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Selected: ${selectedPackages.size}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(
+                            Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        )
+
+                        Icon(
+                            Icons.Rounded.Delete,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .clickable {
+                                    viewModel.removePackages(selectedPackages.keys)
+                                    selectedPackages.clear()
+                                }
+                                .padding(4.dp),
+                            contentDescription = "Delete Selected Items",
+                            tint = MaterialTheme.colorScheme.tertiary)
+                    }
+                }) {
+                if (isPrimaryContentVisible) {
+                    isTopBarExpanded = !isTopBarExpanded
+                }
+            }
+        },
+        bottomBar = {
+            BottomAppBar(actions = {
+                Text(
+                    modifier = Modifier.padding(start = 16.dp),
+                    text = appName,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+                IconButton(onClick = onNavigateToSettings) {
+                    Icon(
+                        Icons.Rounded.Settings,
+                        contentDescription = "Advanced Setting"
+                    )
+                }
+
+                Spacer(Modifier.width(32.dp))
+            }, floatingActionButton = {
+                FloatingActionButton(onClick = {
+                    isBottomSheetVisible = true
+                }) {
+                    Icon(Icons.Rounded.Add, contentDescription = "Add app")
+                }
+            })
+        }
+    ) { contentPadding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(contentPadding),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            PackagesLayout(packages = packages,
+                viewModel = viewModel,
+                isSelected = {
+                    selectedPackages[it] ?: false
+                },
+                onLongClick = {
+                    selectedPackages[it] = true
+                },
+                onClick = { position ->
+                    if (selectedPackages[position] != null) {
+                        selectedPackages.remove(position)
+                        return@PackagesLayout
+                    }
+                    if (selectedPackages.size > 0) {
+                        selectedPackages[position] = true
+                        return@PackagesLayout
+                    }
+                    onPackageIconClick(packages[position])
+                })
+            if (isBottomSheetVisible) {
+                ModalBottomSheet(
+                    modifier = Modifier.fillMaxHeight(),
+                    onDismissRequest = {
+                        isBottomSheetVisible = false
+                        showBottomSheetContent = false
+                    }, sheetState = sheetState
+                ) {
+                    var installedPackages by remember { mutableStateOf<List<String>?>(null) }
+
+                    LaunchedEffect(sheetState.currentValue, sheetState.targetValue) {
+                        if ((sheetState.currentValue == SheetValue.PartiallyExpanded ||
+                                    sheetState.currentValue == SheetValue.Expanded) &&
+                            !showBottomSheetContent
+                        ) {
+                            installedPackages =
+                                viewModel.getInstalledPackages()
+                                    .map { it.packageName }
+                            delay(500)
+                            showBottomSheetContent = true
+                        }
+                    }
+                    if (showBottomSheetContent) {
+                        installedPackages?.let {
+                            Column {
+                                Text(modifier=Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),text = "Add Games:", style = MaterialTheme.typography.titleLarge)
+                                PackagesLayout(
+                                    packages = it,
+                                    viewModel = viewModel,
+                                    onLongClick = {},
+                                    onClick = { position ->
+                                        viewModel.addPackage(it[position])
+                                        isBottomSheetVisible = false
+                                        showBottomSheetContent = false
+                                    })
+                            }
+                        }
+                    } else {
+                        CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
+                    }
+
                 }
             }
         }
     }
+}

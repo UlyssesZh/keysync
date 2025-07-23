@@ -74,6 +74,7 @@ import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class FloatingBubbleService : Service() {
+    private val TAG = "FloatingBubbleService"
     private lateinit var floatingBubbleLP: WindowManager.LayoutParams
 
     @Inject
@@ -150,7 +151,7 @@ class FloatingBubbleService : Service() {
                 stateManager.get().onFloatingBubbleClick()
             },
             onAddItem = { itemType ->
-                Log.i("FloatingBubbleService", "init: $itemType")
+                Log.i(TAG, "init: $itemType")
                 stateManager.get().addNewItem(itemType)
             }
         )
@@ -239,7 +240,6 @@ class FloatingBubbleService : Service() {
                         onRemove = onRemove,
                     )
                 }
-
             }
         }
         composeView.setViewTreeLifecycleOwner(lifecycleOwner)

@@ -49,6 +49,7 @@ class FloatingWindowStateManager @Inject constructor(
     private val _appConfig =MutableStateFlow(AppConfig.Default)
     val keysConfig = _appConfig.asStateFlow()
 
+    val sensitivity = (10f * pointerSensitivity.value)//at max 10x the original offset
 
     private val _isBubbleExpanded = MutableStateFlow(false)
     val isBubbleExpanded = _isBubbleExpanded.asStateFlow()
@@ -80,6 +81,7 @@ class FloatingWindowStateManager @Inject constructor(
             eventHandler.setTouchMode(_appConfig.value.cancellableTouchMode)
             eventHandler.appConfig = _appConfig.value
         }
+
     }
 
     fun loadButtonsConfig(packageName:String){
@@ -170,6 +172,7 @@ class FloatingWindowStateManager @Inject constructor(
         if (isBubbleExpanded.value)
             return false
         when (motionEvent.action) {
+
             MotionEvent.ACTION_BUTTON_PRESS -> {
                 eventHandler.mousePointerPosition = pointerOffset.value.toOffset()
                 eventHandler.handleMouseButton(motionEvent.actionButton, true)
@@ -180,12 +183,11 @@ class FloatingWindowStateManager @Inject constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
-                val sensitivity = (10f * pointerSensitivity.value)//at max 10x the original offset
                 val offset = IntOffset(
                     motionEvent.rawX.toInt(),
                     motionEvent.rawY.toInt()
                 ) * sensitivity
-                if (!isBubbleExpanded.value && !isShootingMode.value) {
+                if (!isShootingMode.value) {
                     val position = _mousePointerOffset.value + offset
                     _mousePointerOffset.value = IntOffset(
                         position.x.coerceIn(0, displayMetrics.widthPixels),

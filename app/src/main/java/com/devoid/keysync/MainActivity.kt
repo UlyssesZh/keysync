@@ -116,16 +116,8 @@ class MainActivity : ComponentActivity() {
                                     snackbarHostState
                                 )
                             ) {
-                                val packageIntent =
-                                    packageManager.getLaunchIntentForPackage(packageName)
-                                packageIntent?.let {
-                                    it.flags =
-                                        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
-                                }
-                                startActivity(packageIntent)
-                                if (!isServiceRunning) {
-                                    launchService(packageName)
-                                }
+                                viewModel.launchPackage(packageName,packageManager,isServiceRunning)
+//                                launchService()
                             }
                         }
                     }
@@ -183,15 +175,6 @@ class MainActivity : ComponentActivity() {
 
     private fun checkOverlayPermission(): Boolean {
         return Settings.canDrawOverlays(this)
-    }
-
-    private fun launchService(packageName: String) {
-        val serviceIntent = Intent(
-            this@MainActivity,
-            FloatingBubbleService::class.java
-        )
-        serviceIntent.putExtra(FloatingBubbleService.INTENT_EXTRA_PACAKAGE, packageName)
-        startForegroundService(serviceIntent)
     }
 
     private fun checkUiState(

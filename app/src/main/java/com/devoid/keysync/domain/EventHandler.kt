@@ -1,5 +1,7 @@
 package com.devoid.keysync.domain
 
+import android.nfc.Tag
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.compose.ui.geometry.Offset
@@ -7,6 +9,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.nativeKeyCode
 import com.devoid.keysync.model.AppConfig
 import com.devoid.keysync.model.DraggableItem
+import com.devoid.keysync.model.DraggableItemType
 import com.devoid.keysync.model.EventInjector
 import com.devoid.keysync.model.KeyMap
 import com.devoid.keysync.model.KeymapType
@@ -28,14 +31,15 @@ const val KEYCODE_CANCEL = 1005//cancel button for cancelable components
 class EventHandler(
     private val eventInjector: EventInjector
 ) {
-    private var items: Map<Set<Int>, KeyMap> = mapOf()
+    private val TAG = "EventHandler"
+    private var items: Map<Set<Int>, KeyMap> = mapOf()//contains key mappings for keycodes
 
     private var multiModeTouchHandler: MultiModeTouchHandler
 
     private val pressedKeys =
         mutableMapOf<Int, Boolean>()
     private val pointerIds =
-        mutableMapOf<Int, Int?>()
+        mutableMapOf<Int, Int?>()//contains bindings for keycodes
     private val pressedKeysGroup =
         mutableMapOf<Int, Boolean>()//separate map because groups(like "wasd" ,cancellable) are registered under a const in $pressedKeys
     private val _shootingModeState =
@@ -72,7 +76,12 @@ class EventHandler(
     }
 
     fun handleKeyEvent(keyEvent: KeyEvent): Boolean {
+        Log.i(TAG,"key event: $keyEvent")
         val keyCode = if (isWASD(keyEvent)) KEYCODE_WASD else keyEvent.keyCode
+        if (keyCode == appConfig.shootingModeKeyCode){
+            if (keyEvent.action != MotionEvent.ACTION_DOWN) return true
+            toggleShootingMode(false)
+        }
         if (pointerIds[keyCode] == null)//no keybinding for $keycode
             return false
         when (keyEvent.action) {
@@ -113,9 +122,6 @@ class EventHandler(
         }
     }
 
-    fun handleMotionEvent(motionEvent: MotionEvent) {
-
-    }
 
     private fun processKeyEvent(keyEvent: KeyEvent, pointerId: Int) {
         if (keyEvent.action == MotionEvent.ACTION_DOWN) {
@@ -147,9 +153,9 @@ class EventHandler(
                     isPressed,
                     pointerId,
                     it
-                ).let { shouldToggleShootingMode->
-                    if (isShootingMode.value==shouldToggleShootingMode){
-                        pressedKeysGroup[keyEvent.keyCode] =shouldToggleShootingMode
+                ).let { shouldToggleShootingMode ->
+                    if (isShootingMode.value == shouldToggleShootingMode) {
+                        pressedKeysGroup[keyEvent.keyCode] = shouldToggleShootingMode
                         toggleShootingMode()
                     }
                 }
@@ -157,22 +163,24 @@ class EventHandler(
         }
     }
 
-    private fun toggleShootingMode() {
-        when(_shootingModeState.value){
-            ShootingModeState.Disabled(true) -> {
-                _shootingModeState.value= ShootingModeState.Enabled
-                val key= setOf(appConfig.shootingModeKeyCode)
+    private fun toggleShootingMode(temp:Boolean=true) {
+        when (_shootingModeState.value) {
+            ShootingModeState.Disabled(temp) -> {
+                _shootingModeState.value = ShootingModeState.Enabled
+                val key = setOf(appConfig.shootingModeKeyCode)
                 val pointerId = pointerIds[appConfig.shootingModeKeyCode]
                 items[key]?.let {
-                    eventInjector.injectPointer(pointerId!!,it.position)
+                    eventInjector.injectPointer(pointerId!!, it.position)
                 }
             }
-            ShootingModeState.Enabled ->{
-                _shootingModeState.value= ShootingModeState.Disabled(true)
+
+            ShootingModeState.Enabled -> {
+                _shootingModeState.value = ShootingModeState.Disabled(temp)
                 val pointerId = pointerIds[appConfig.shootingModeKeyCode]
                 eventInjector.releasePointer(pointerId!!)
             }
-            else->{}
+
+            else -> {}
         }
     }
 
@@ -223,22 +231,23 @@ class EventHandler(
         return true
     }
 
-    fun handleMouseButton(mouseButton: Int, pressed: Boolean) {
+    fun handleMouseButton(mouseButton: Int, pressed: Boolean):Boolean {
         val keyCode = when (mouseButton) {
             MotionEvent.BUTTON_PRIMARY -> KEYCODE_LMC
 
             MotionEvent.BUTTON_SECONDARY -> KEYCODE_RMC
 
             MotionEvent.BUTTON_TERTIARY -> KEYCODE_MMC
-            else -> return
+            else -> return false
         }
-        when (keyCode) {
+       return when (keyCode) {
             KEYCODE_LMC, appConfig.fireKeyCode -> {
                 if (!isShootingMode.value) {
-                    simulateNativeClick(appConfig.fireKeyCode, pressed)
-                    return
+                    simulateNativeClick(KEYCODE_LMC, pressed)
+                    return true
                 }
-                val pointerId = pointerIds[KEYCODE_LMC] ?: return
+                if (KEYCODE_LMC!= appConfig.fireKeyCode) return false
+                val pointerId = pointerIds[KEYCODE_LMC] ?: return false
                 if (pressed) {
                     val itemKey = setOf(KEYCODE_LMC)
                     items[itemKey]?.let {
@@ -247,28 +256,48 @@ class EventHandler(
                 } else {
                     eventInjector.releasePointer(pointerId)
                 }
+                true
             }
 
             appConfig.shootingModeKeyCode -> {
                 if (!pressed)
-                    return
-                val itemKey = setOf(appConfig.shootingModeKeyCode)
-                if (items[itemKey] == null)
-                    return
-                val pointerId = pointerIds[appConfig.shootingModeKeyCode]!!
+                    return true
+                toggleShootingMode(false)
+
+//                val itemKey = setOf(appConfig.shootingModeKeyCode)
+//                if (items[itemKey] == null)
+//                    return false
+//                val pointerId = pointerIds[appConfig.shootingModeKeyCode]?:return false
+//                if (isShootingMode.value) {
+//                    eventInjector.releasePointer(pointerId)
+//                    _shootingModeState.value = ShootingModeState.Disabled(false)
+//                } else {
+//                    items[itemKey]?.let {
+//                        eventInjector.injectPointer(pointerId, it.position, it.end!!)
+//                    }
+//                    _shootingModeState.value = ShootingModeState.Enabled
+//                }
+//                true
+                true
+            }
+
+            KEYCODE_RMC,appConfig.scopeKeyCode -> {
                 if (isShootingMode.value) {
-                    items[itemKey]?.let {
+                    val pointerId = pointerIds[KEYCODE_RMC] ?: return false
+                    if (pressed) {
+                        val itemKey = setOf(KEYCODE_RMC)
+                        items[itemKey]?.let {
+                            eventInjector.injectPointer(pointerId, it.position, it.end!!)
+                        }
+                    } else {
                         eventInjector.releasePointer(pointerId)
                     }
-                    _shootingModeState.value = ShootingModeState.Disabled(false)
-                } else {
-                    items[itemKey]?.let {
-                        eventInjector.injectPointer(pointerId, it.position, it.end!!)
-                    }
-                    _shootingModeState.value = ShootingModeState.Enabled
                 }
+                true
             }
-        }
+
+           else -> false
+       }
     }
 
 
@@ -281,7 +310,7 @@ class EventHandler(
             )//update the position of visible mouse pressed pointer
             return true
         }
-        val pointerId = pointerIds[KEYCODE_RMC]
+        val pointerId = pointerIds[appConfig.shootingModeKeyCode]
         pointerId?.let {
             eventInjector.updatePointerPosition(it, position)
             return true
@@ -308,6 +337,7 @@ class EventHandler(
         val map = hashMapOf<Set<Int>, KeyMap>()
         pointerIds.clear()
         items.forEach {
+            Log.i(TAG,"adding keymaping for: $it")
             when (it) {
                 is DraggableItem.WASDGroup -> {
                     map[setOf(Key.W.nativeKeyCode)] = KeyMap(position = it.w, center = it.center)
@@ -363,16 +393,22 @@ class EventHandler(
                 }
 
                 is DraggableItem.FixedKey -> {
-                    var position =
-                        it.position
-                    val shrinkSize =
-                        it.size / 3f                                     //shrink the size so that artificial taps can be accurate on circular buttons
-                    val end = position + Offset(x = it.size - shrinkSize, y = it.size - shrinkSize)
-                    position = Offset(position.x + shrinkSize, position.y + shrinkSize)
-                    map[setOf(it.keyCode)] =
-                        KeyMap(position = position, end = end)
-                    if (!pointerIds.containsKey(it.keyCode)) {
-                        pointerIds[it.keyCode] = pointerIds.size
+                   val keyCode= when(it.type){
+                        DraggableItemType.SHOOTING_MODE -> appConfig.shootingModeKeyCode
+                        DraggableItemType.FIRE -> appConfig.fireKeyCode
+                        DraggableItemType.SCOPE -> appConfig.scopeKeyCode
+                        else->it.keyCode
+                    }
+                    it.apply {
+                        val shrinkSize =
+                            size / 3f                                     //shrink the size so that artificial taps can be accurate on circular buttons
+                        val end = position + Offset(x = size - shrinkSize, y = size - shrinkSize)
+                        position = Offset(position.x + shrinkSize, position.y + shrinkSize)
+                        map[setOf(keyCode)] =
+                            KeyMap(position = position, end = end)
+                        if (!pointerIds.containsKey(keyCode)) {
+                            pointerIds[keyCode] = pointerIds.size
+                        }
                     }
 
                 }

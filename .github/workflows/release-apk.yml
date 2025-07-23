@@ -1,0 +1,65 @@
+name: Android Release APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_sign:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Decode keystore
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > my-release-key.jks
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=my-release-key.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+      - name: Extract Version from Gradle (KTS)
+        id: version
+        run: |
+            VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+            echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+      - name: Upload Release APK to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+            name: release-apk
+            path: app/build/outputs/apk/release/app-release.apk
+
+  release:
+        needs: build
+        runs-on: ubuntu-latest
+
+        steps:
+          - name: Download APK Artifact
+            uses: actions/download-artifact@v3
+            with:
+              name: release-apk
+              path: .
+
+          - name: Create GitHub Release
+            uses: softprops/action-gh-release@v1
+            with:
+              tag_name: v${{ needs.build.outputs.version_name }}
+              name: Release v${{ needs.build.outputs.version_name }}
+              files: app-release.apk
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
