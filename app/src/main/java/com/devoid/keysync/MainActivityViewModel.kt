@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.hardware.input.InputManager
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -146,7 +147,7 @@ class MainActivityViewModel @Inject constructor(
         deviceIds.forEach { deviceId ->
             val device = inputManager.getInputDevice(deviceId)
             device?.let {
-                if (it.isExternal) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && it.isExternal) {
                     devices[it.id] = getDeviceName(it)
                 }
             }
@@ -156,7 +157,7 @@ class MainActivityViewModel @Inject constructor(
             override fun onInputDeviceAdded(deviceId: Int) {
                 val device = inputManager.getInputDevice(deviceId)
                 device?.let {
-                    if (it.isExternal) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && it.isExternal) {
                         _connectedDevices.value =
                             _connectedDevices.value.plus(it.id to getDeviceName(it))
                     }
@@ -171,7 +172,7 @@ class MainActivityViewModel @Inject constructor(
             override fun onInputDeviceChanged(deviceId: Int) {
                 val device = inputManager.getInputDevice(deviceId)
                 device?.let {
-                    if (it.isExternal) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && it.isExternal) {
                         _connectedDevices.value =
                             _connectedDevices.value.plus(it.id to getDeviceName(it))
                     }
