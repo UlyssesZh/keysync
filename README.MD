@@ -1,3 +1,13 @@
+Forked from [aka-munan/keysync](https://github.com/aka-munan/keysync) for my personal use to play PvZ 2 on Genymotion.
+Changes made:
+
+- Min SDK version downgraded to 28.
+- Disable special treatment for WASD keys.
+- Remove mouse pointer image.
+- Add GitHub Actions to build the APK automatically when a tag is pushed (and delete the original release APK).
+
+---
+
 # KeySync
 
 KeySync is an Android app that allows users to play games using an external keyboard and mouse without requiring root access. It leverages [Shizuku](https://github.com/RikkaApps/Shizuku) to grant necessary permissions and maps key events from external input devices to on-screen touch points.

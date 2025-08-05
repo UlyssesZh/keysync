@@ -13,10 +13,10 @@ android {
 
     defaultConfig {
         applicationId = "com.devoid.keysync"
-        minSdk = 29
+        minSdk = 28
         targetSdk = 35
         versionCode = 2
-        versionName = "1.1-beta"
+        versionName = "0.1.0-ulysses"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

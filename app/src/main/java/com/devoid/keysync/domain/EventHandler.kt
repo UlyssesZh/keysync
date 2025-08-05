@@ -72,7 +72,8 @@ class EventHandler(
     }
 
     fun handleKeyEvent(keyEvent: KeyEvent): Boolean {
-        val keyCode = if (isWASD(keyEvent)) KEYCODE_WASD else keyEvent.keyCode
+        // val keyCode = if (isWASD(keyEvent)) KEYCODE_WASD else keyEvent.keyCode
+        val keyCode = keyEvent.keyCode
         if (pointerIds[keyCode] == null)//no keybinding for $keycode
             return false
         when (keyEvent.action) {
@@ -94,7 +95,7 @@ class EventHandler(
             }
 
             MotionEvent.ACTION_UP -> {
-                if (isWASD(keyEvent)) {
+                if (keyCode == KEYCODE_WASD) {
                     val pointerId = pointerIds[KEYCODE_WASD]!!
                     pressedKeysGroup[keyEvent.keyCode] = false
                     processWasdEvent(keyEvent, pointerId)
