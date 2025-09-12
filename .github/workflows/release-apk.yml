@@ -20,17 +20,21 @@ jobs:
           java-version: '17'
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > my-release-key.jks
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > keystore.jks
+
+      - name: Create gradle.properties
+        run: |
+          echo "storeFile=keystore.jks" >> ~/.gradle/gradle.properties
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> ~/.gradle/gradle.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> ~/.gradle/gradle.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> ~/.gradle/gradle.properties
+
 
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=my-release-key.jks \
-            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease
 
       - name: Extract Version from Gradle (KTS)
         id: version

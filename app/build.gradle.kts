@@ -12,6 +12,16 @@ android {
     namespace = "com.devoid.keysync"
     compileSdk = 35
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(property("storeFile")!!)
+            storePassword = property("storePassword") as String
+            keyAlias = property("keyAlias") as String
+            keyPassword = property("keyPassword") as String
+        }
+    }
+
+
     defaultConfig {
         applicationId = "com.devoid.keysync"
         minSdk = 29
@@ -25,6 +35,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
