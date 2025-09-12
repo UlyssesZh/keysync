@@ -20,13 +20,13 @@ jobs:
           java-version: '17'
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > keystore.jks
+        run: echo "${{ secrets.KEYSTORE }}" | base64 --decode > app/keystore.jks
 
       - name: Create gradle.properties
         run: |
           mkdir -p ~/.gradle
           cat <<EOF >> ~/.gradle/gradle.properties
-          storeFile=keystore.jks
+          storeFile=app/keystore.jks
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
