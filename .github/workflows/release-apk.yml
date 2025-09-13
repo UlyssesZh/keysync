@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch: # Allow manual triggering
 
+permissions:
+contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -44,7 +47,6 @@ jobs:
           ls -la app/key.jks
           ls -lh app/key.jks          # show file size
           file app/key.jks            # check type (should be "Java KeyStore")
-          keytool -list -v -keystore app/key.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} | head -n 20
 
 
 
