@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    enviornment: build-env
     outputs:
       version_name: ${{ steps.version.outputs.version_name }}
 
