@@ -13,11 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+            distribution: 'zulu'
+            java-version: '17'
+            cache: 'gradle'
 
       - name: Decode keystore
         run: |
@@ -25,20 +26,6 @@ jobs:
         env:
             KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
 
-      - name: Validate keystore
-        run: |
-          echo "Checking if keystore file exists and is readable..."
-          keytool -version
-          ls -la app/keystore.p12
-
-          echo "Verifying keystore can be opened..."
-          keytool -list -keystore app/keystore.p12 -storepass ${{ secrets.KEYSTORE_PASSWORD }} -storetype PKCS12
-
-          echo "Checking certificate validity..."
-          keytool -list -keystore app/keystore.p12 -storepass ${{ secrets.KEYSTORE_PASSWORD }} -storetype PKCS12 -v | grep -E "(Alias name|Valid from|Valid until|Certificate fingerprints)"
-
-          echo "Keystore validation successful!"
-        continue-on-error: false
 
       - name: Create gradle.properties
         run: |
