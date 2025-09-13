@@ -26,16 +26,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+
       - name: Decode Keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
-        run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > app/key.jks
-          echo "Keystore decoded to: $(pwd)/key.jks"
-          ls -la app/key.jks
-          ls -lh app/key.jks          # show file size
-          file app/key.jks            # check type (should be "Java KeyStore")
-          keytool -list -v -keystore app/key.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} | head -n 20
+        id: decode_keystore
+        uses: timheuer/base64-to-file@v1
+        with:
+          fileName: 'app/keys.jks'
+          encodedString: ${{ secrets.KEYSTORE }}
+
 
 
 
