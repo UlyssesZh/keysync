@@ -31,10 +31,10 @@ jobs:
           ls -la app/keystore.p12
 
           echo "Verifying keystore can be opened..."
-          keytool -list -keystore keystore.p12 -storepass ${{ secrets.KEYSTORE_PASSWORD }} -storetype PKCS12
+          keytool -list -keystore app/keystore.p12 -storepass ${{ secrets.KEYSTORE_PASSWORD }} -storetype PKCS12
 
           echo "Checking certificate validity..."
-          keytool -list -keystore keystore.p12 -storepass ${{ secrets.KEYSTORE_PASSWORD }} -storetype PKCS12 -v | grep -E "(Alias name|Valid from|Valid until|Certificate fingerprints)"
+          keytool -list -keystore app/keystore.p12 -storepass ${{ secrets.KEYSTORE_PASSWORD }} -storetype PKCS12 -v | grep -E "(Alias name|Valid from|Valid until|Certificate fingerprints)"
 
           echo "Keystore validation successful!"
         continue-on-error: false  # This will stop the workflow if validation fails
