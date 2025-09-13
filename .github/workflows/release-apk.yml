@@ -9,7 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: build-env
     outputs:
       version_name: ${{ steps.version.outputs.version_name }}
 
@@ -35,6 +34,16 @@ jobs:
           fileName: 'app/keys.jks'
           encodedString: ${{ secrets.KEYSTORE }}
 
+      - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > app/key.jks
+          echo "Keystore decoded to: $(pwd)/key.jks"
+          ls -la app/key.jks
+          ls -lh app/key.jks          # show file size
+          file app/key.jks            # check type (should be "Java KeyStore")
+          keytool -list -v -keystore app/key.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} | head -n 20
 
 
 
