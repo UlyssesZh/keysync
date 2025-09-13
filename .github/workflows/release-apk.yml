@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: # Allow manual triggering
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version_name: ${{ steps.version.outputs.version_name }}
 
     steps:
       - name: Checkout code
@@ -16,61 +19,82 @@ jobs:
       - name: Set Up JDK
         uses: actions/setup-java@v4
         with:
-            distribution: 'zulu'
-            java-version: '17'
-            cache: 'gradle'
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
-      - name: Decode keystore
-        run: |
-            echo "$KEYSTORE_BASE64" | base64 --d > app/keystore.p12
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Decode Keystore
         env:
-            KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
-
-
-      - name: Create gradle.properties
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE }}
         run: |
-          mkdir -p ~/.gradle
-          cat <<EOF >> ~/.gradle/gradle.properties
-          storeFile=keystore.p12
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          EOF
+          echo "$KEYSTORE_BASE64" | base64 -d > app/key.jks
+          echo "Keystore decoded to: $(pwd)/key.jks"
+          ls -la app/key.jks
+          ls -lh app/key.jks          # show file size
+          file app/key.jks            # check type (should be "Java KeyStore")
+          keytool -list -v -keystore app/key.jks -storepass ${{ secrets.KEYSTORE_PASSWORD }} | head -n 20
+
+
+
+      - name: Create gradle.properties with signing info
+        run: |
+            mkdir -p ~/.gradle
+            cat <<EOF >> ~/.gradle/gradle.properties
+            storeFile=key.jks
+            storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+            keyAlias=${{ secrets.KEY_ALIAS }}
+            keyPassword=${{ secrets.KEY_PASSWORD }}
+            EOF
+
 
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
-
       - name: Extract Version from Gradle (KTS)
         id: version
         run: |
-            VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
-            echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION_NAME"
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
 
       - name: Upload Release APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
-            name: release-apk
-            path: app/build/outputs/apk/release/app-release.apk
+          name: release-apk-v${{ steps.version.outputs.version_name }}
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+
+      - name: Clean up keystore
+        if: always()
+        run: |
+          rm -f key.jks
+          rm -f signing.properties
 
   release:
-        needs: build
-        runs-on: ubuntu-latest
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' # Only create releases from main branch
 
-        steps:
-          - name: Download APK Artifact
-            uses: actions/download-artifact@v4
-            with:
-              name: release-apk
-              path: .
+    steps:
+      - name: Download APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apk-v${{ needs.build.outputs.version_name }}
+          path: .
 
-          - name: Create GitHub Release
-            uses: softprops/action-gh-release@v2
-            with:
-              tag_name: v${{ needs.build.outputs.version_name }}
-              name: Release v${{ needs.build.outputs.version_name }}
-              files: app-release.apk
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build.outputs.version_name }}
+          name: Release v${{ needs.build.outputs.version_name }}
+          files: app-release.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
