@@ -34,7 +34,7 @@ jobs:
           echo "prev_name=$PREV_NAME"
           if [ "$PREV_NAME" = "$version_name" ]; then
             echo "Version name didn’t change. Skipping build."
-            exit 0
+            exit 1
           fi
 
       - name: Set Up JDK
