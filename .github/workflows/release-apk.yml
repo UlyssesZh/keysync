@@ -20,6 +20,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
+      - name: Extract Version from Gradle (KTS)
+        id: version
+        run: |
+          VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION_NAME"
+
+      - name: Check if versionCode changed
+        id: version_check
+        run: |
+          PREV_NAME=$(git show HEAD^:app/build.gradle.kts | grep 'versionName =' | sed 's/.*"\(.*\)".*/\1/')
+          echo "prev_name=$PREV_NAME"
+          if [ "$PREV_NAME" = "$version_name" ]; then
+            echo "Version name didn’t change. Skipping build."
+            exit 0
+          fi
+
       - name: Set Up JDK
         uses: actions/setup-java@v4
         with:
@@ -63,13 +80,6 @@ jobs:
 
       - name: Grant execute permission to gradlew
         run: chmod +x gradlew
-
-      - name: Extract Version from Gradle (KTS)
-        id: version
-        run: |
-          VERSION_NAME=$(grep 'versionName =' app/build.gradle.kts | sed 's/.*"\(.*\)".*/\1/')
-          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION_NAME"
 
       - name: Build Release APK
         run: ./gradlew assembleRelease
