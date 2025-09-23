@@ -8,6 +8,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -58,6 +59,7 @@ class MainActivity : ComponentActivity() {
     private val navigateTo = mutableStateOf<Any?>(null)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         intent.action?.let {
             if (it == INTENT_ACTION_SETTINGS) {

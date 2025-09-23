@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,6 +51,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -235,6 +238,7 @@ fun MainScreen(
             )
             DualTopBar(
                 modifier = Modifier
+                    .windowInsetsPadding(TopAppBarDefaults.windowInsets)
                     .padding(16.dp),
                 isPrimaryVisible = isPrimaryContentVisible,
                 isPrimaryExpanded = isTopBarExpanded,
@@ -315,7 +319,8 @@ fun MainScreen(
             }
         },
         bottomBar = {
-            BottomAppBar(actions = {
+            BottomAppBar(
+                actions = {
                 Text(
                     modifier = Modifier.padding(start = 16.dp),
                     text = appName,

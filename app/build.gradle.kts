@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.konan.properties.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,16 +11,21 @@ plugins {
 }
 
 android {
-    
+
     namespace = "com.devoid.keysync"
     compileSdk = 35
 
     signingConfigs {
+        val keystoreProperties = Properties()
+        val keystorePropertiesFile = rootProject.file("keystore.properties")
+        if (keystorePropertiesFile.exists()) {
+            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+        }
         create("release") {
-            storeFile = file(property("storeFile")!!)
-            storePassword = property("storePassword") as String
-            keyAlias = property("keyAlias") as String
-            keyPassword = property("keyPassword") as String
+            storeFile = file(keystoreProperties.getProperty("storeFile")!!)
+            storePassword = keystoreProperties.getProperty("storePassword") as String
+            keyAlias = keystoreProperties.getProperty("keyAlias") as String
+            keyPassword = keystoreProperties.getProperty("keyPassword") as String
         }
     }
 
@@ -26,8 +34,8 @@ android {
         applicationId = "com.devoid.keysync"
         minSdk = 29
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.2-beta"
+        versionCode = 4
+        versionName = "1.3-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
