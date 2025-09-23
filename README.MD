@@ -12,7 +12,7 @@ KeySync is an Android app that allows users to play games using an external keyb
 
 ## Installation
 
-1. Download and install the latest APK from [Release](https://github.com/aka-munan/keysync/tree/main/app/release).
+1. Download and install the latest APK from [Release](https://github.com/aka-munan/keysync/releases).
 2. Install and set up [Shizuku](https://shizuku.rikka.app/download/).
 3. Open KeySync and follow the setup instructions.
 
