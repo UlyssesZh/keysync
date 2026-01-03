@@ -16,16 +16,11 @@ android {
     compileSdk = 35
 
     signingConfigs {
-        val keystoreProperties = Properties()
-        val keystorePropertiesFile = rootProject.file("keystore.properties")
-        if (keystorePropertiesFile.exists()) {
-            keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-        }
         create("release") {
-            storeFile = file(keystoreProperties.getProperty("storeFile")!!)
-            storePassword = keystoreProperties.getProperty("storePassword") as String
-            keyAlias = keystoreProperties.getProperty("keyAlias") as String
-            keyPassword = keystoreProperties.getProperty("keyPassword") as String
+            storeFile = file(property("storeFile")!!)
+            storePassword = property("storePassword") as String
+            keyAlias = property("keyAlias") as String
+            keyPassword = property("keyPassword") as String
         }
     }
 
