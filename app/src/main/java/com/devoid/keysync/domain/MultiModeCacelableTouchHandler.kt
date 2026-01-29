@@ -1,12 +1,19 @@
 package com.devoid.keysync.domain
 
+
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import com.devoid.keysync.model.EventInjector
 import com.devoid.keysync.model.KeyMap
 import com.devoid.keysync.model.MultiModeTouchHandler
 
-class TapModeTouchHandler(private val eventInjector: EventInjector) : MultiModeTouchHandler {
+//cancelable pointers are difrent then regular one because u cant inject pointer at primary position for too loong
+//rather single tap primary position and cancel position
+
+
+//primary position must be provided when $isPressed is false and cancel position must be provided when $isPressed is true
+class CancelableTapModeTouchHandler(private val eventInjector: EventInjector) : MultiModeTouchHandler {
     override fun handleTouchEvent(
         keyEvent: KeyEvent,
         isPressed: Boolean,
@@ -22,25 +29,24 @@ class TapModeTouchHandler(private val eventInjector: EventInjector) : MultiModeT
     }
 }
 
-class HoldModeTouchHandler(private val eventInjector: EventInjector) : MultiModeTouchHandler {
+//primary position must be provided when $isPressed is false and cancel position must be provided when $isPressed is true
+class CancelableHoldModeTouchHandler(private val eventInjector: EventInjector) : MultiModeTouchHandler {
     override fun handleTouchEvent(
         keyEvent: KeyEvent,
         isPressed: Boolean,
         pointerId: Int,
         keyMap: KeyMap
     ): Boolean {
-        return if (keyEvent.action == MotionEvent.ACTION_DOWN) {
+        if (keyEvent.action == MotionEvent.ACTION_DOWN || keyEvent.action == MotionEvent.ACTION_UP) {
             eventInjector.injectPointer(pointerId, keyMap.position, keyMap.end!!)
-            true
-        }else if (keyEvent.action == MotionEvent.ACTION_UP){
             eventInjector.releasePointer(pointerId)
-            false
-        }else
-            isPressed
+        }
+        return keyEvent.action == MotionEvent.ACTION_DOWN
     }
 }
 
-class MixedModeTouchHandler(private val eventInjector: EventInjector) : MultiModeTouchHandler {
+//primary position must be provided when $isPressed is false and cancel position must be provided when $isPressed is true
+class CancelableMixedModeTouchHandler(private val eventInjector: EventInjector) : MultiModeTouchHandler {
     private var lastKeyDownMap = hashMapOf<Int, Long>()
     private val minDifference = 200
     override fun handleTouchEvent(
@@ -51,18 +57,15 @@ class MixedModeTouchHandler(private val eventInjector: EventInjector) : MultiMod
     ): Boolean {
         if (keyEvent.action == MotionEvent.ACTION_DOWN) {
             lastKeyDownMap[pointerId] = System.currentTimeMillis()
-            if (isPressed) {
-                eventInjector.releasePointer(pointerId)
-            } else {
-                eventInjector.injectPointer(pointerId, keyMap.position, keyMap.end!!)
-            }
+            eventInjector.injectPointer(pointerId, keyMap.position, keyMap.end!!)
+            eventInjector.releasePointer(pointerId)
             return !isPressed
         } else if (keyEvent.action == MotionEvent.ACTION_UP) {
             if (!isPressed)
                 return false
             val difference = System.currentTimeMillis() - (lastKeyDownMap[pointerId] ?: 0)
             if (difference > minDifference) {
-//               eventInjector.injectPointer(pointerId, keyMap.position, keyMap.end!!)
+               eventInjector.injectPointer(pointerId, keyMap.position, keyMap.end!!)
                 eventInjector.releasePointer(pointerId)
                 return false
             }

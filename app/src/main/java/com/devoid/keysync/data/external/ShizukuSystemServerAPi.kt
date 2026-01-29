@@ -38,7 +38,7 @@ class ShizukuSystemServerAPi {
         }
        return EventHandler(object : EventInjectorImpl(){
            override fun inject(event: InputEvent) {
-               Log.d(TAG, "inject: injecting: $event")
+//               Log.d(TAG, "inject: injecting: $event")
                injectInputEventFunction?.invoke(inputManagerInstance, event, 1)
            }
        })

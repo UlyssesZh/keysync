@@ -46,8 +46,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -294,7 +292,7 @@ fun SettingsScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    newConfig.scopeTouchMode.name.capitalizeFirst(),
+                                    newConfig.normalBtnTouchMode.name.capitalizeFirst(),
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = null)
@@ -306,7 +304,7 @@ fun SettingsScreen(
                                     DropdownMenuItem(
                                         text = { Text(it.name.capitalizeFirst()) },
                                         onClick = {
-                                            newConfig = newConfig.copy(scopeTouchMode = it)
+                                            newConfig = newConfig.copy(normalBtnTouchMode = it)
                                             scopeDropDownExpanded = false
                                         })
                                 }

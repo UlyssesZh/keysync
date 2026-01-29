@@ -43,6 +43,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -159,7 +160,7 @@ class FloatingBubbleService : Service() {
             stateManager.get().isBubbleExpanded.collect { expanded ->
                 itemsContainerLP.apply {
                     width = WindowManager.LayoutParams.MATCH_PARENT
-                    height =containerView?.rootView?.height?:0
+                    height = containerView?.rootView?.height ?: 0
                 }
                 if (expanded) {
                     itemsContainerLP.flags =
@@ -184,7 +185,7 @@ class FloatingBubbleService : Service() {
             }
         }
         stateManager.get().windowManager.addView(containerView, itemsContainerLP)
-        floatingBubbleLP.y=200
+        floatingBubbleLP.y = 200
         stateManager.get().windowManager.addView(floatingBubbleView, floatingBubbleLP)
         containerView?.postDelayed({
             containerView?.requestFocus()
@@ -214,7 +215,10 @@ class FloatingBubbleService : Service() {
         onRemove: (Int) -> Unit
     ): ComposeView {
         val composeView = ComposeView(this)
-        composeView.layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT)
+        composeView.layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
         composeView.setContent {
             KeySyncTheme {
                 val draggableItems by stateManager.get().containerItems.collectAsState()
@@ -226,12 +230,19 @@ class FloatingBubbleService : Service() {
                 Box {
                     if (!isBubbleExpanded && !isShootingMode) {
                         Image(///mouse pointer
-                            modifier = Modifier.offset { pointerOffset },
+                            modifier = Modifier.offset {
+                                pointerOffset.let {
+                                    IntOffset(
+                                        it.x.toInt(),
+                                        it.y.toInt()
+                                    )
+                                }
+                            },
                             painter = painterResource(R.drawable.mouse),
                             contentDescription = "mouse pointer"
                         )
                     }
-                    if (!isBubbleExpanded&&itemsContainerOpacity==0f)
+                    if (!isBubbleExpanded && itemsContainerOpacity == 0f)
                         return@Box//do not compose if user set overlay opacity to 0
                     ItemsContainer(
                         Modifier.alpha(if (isBubbleExpanded) 1f else itemsContainerOpacity),
@@ -313,7 +324,8 @@ class FloatingBubbleService : Service() {
                                 )
                             } else {
                                 floatingBubbleLP.x =
-                                    baseContext.resources.displayMetrics.widthPixels-(floatingBubbleView?.width?:0)
+                                    baseContext.resources.displayMetrics.widthPixels - (floatingBubbleView?.width
+                                        ?: 0)
                                 stateManager.get().windowManager.updateViewLayout(
                                     floatingBubbleView,
                                     floatingBubbleLP
@@ -333,16 +345,17 @@ class FloatingBubbleService : Service() {
         ) {
             ConstraintLayout {
                 val (background, bubbleLayout, otherLayout, bubble) = createRefs()
-                Box(modifier = Modifier
-                    .constrainAs(background) {
-                        start.linkTo(bubble.start)
-                        top.linkTo(bubble.top)
-                        end.linkTo(bubble.end)
-                        bottom.linkTo(bubbleLayout.bottom)
-                        height = Dimension.fillToConstraints
-                        width = Dimension.fillToConstraints
-                    }
-                    .background(color = MaterialTheme.colorScheme.surface, CircleShape)
+                Box(
+                    modifier = Modifier
+                        .constrainAs(background) {
+                            start.linkTo(bubble.start)
+                            top.linkTo(bubble.top)
+                            end.linkTo(bubble.end)
+                            bottom.linkTo(bubbleLayout.bottom)
+                            height = Dimension.fillToConstraints
+                            width = Dimension.fillToConstraints
+                        }
+                        .background(color = MaterialTheme.colorScheme.surface, CircleShape)
                 )
                 FloatingBubble(
                     modifier = Modifier
@@ -379,7 +392,8 @@ class FloatingBubbleService : Service() {
                         }
                     }
                 }
-                AnimatedVisibility(visible = (itemsMenuVisible),
+                AnimatedVisibility(
+                    visible = (itemsMenuVisible),
                     enter = fadeIn(),
                     exit = fadeOut(),
                     modifier = Modifier
@@ -394,7 +408,8 @@ class FloatingBubbleService : Service() {
                         itemsMenuVisible = false
                     })
                 }
-                AnimatedVisibility(visible = (settingsLayoutVisible),
+                AnimatedVisibility(
+                    visible = (settingsLayoutVisible),
                     enter = fadeIn(),
                     exit = fadeOut(),
                     modifier = Modifier
@@ -408,7 +423,8 @@ class FloatingBubbleService : Service() {
                         }) {
                     val pointerSensitivity by stateManager.get().pointerSensitivity.collectAsState()
                     val overlayOpacity by stateManager.get().overlayOpacity.collectAsState()
-                    SettingsLayout(pointerSensitivity = pointerSensitivity,
+                    SettingsLayout(
+                        pointerSensitivity = pointerSensitivity,
                         overlayOpacity = overlayOpacity,
                         onOpacityChange = { stateManager.get().overlayOpacity.value = it },
                         onPointerSensChange = { stateManager.get().pointerSensitivity.value = it },
@@ -439,16 +455,17 @@ fun PreviewFloatingBubble() {
     ) {
         ConstraintLayout {
             val (background, bubbleLayout, otherLayout, bubble) = createRefs()
-            Box(modifier = Modifier
-                .constrainAs(background) {
-                    start.linkTo(bubble.start)
-                    top.linkTo(bubble.top)
-                    end.linkTo(bubble.end)
-                    bottom.linkTo(bubbleLayout.bottom)
-                    height = Dimension.fillToConstraints
-                    width = Dimension.fillToConstraints
-                }
-                .background(color = MaterialTheme.colorScheme.surface, CircleShape)
+            Box(
+                modifier = Modifier
+                    .constrainAs(background) {
+                        start.linkTo(bubble.start)
+                        top.linkTo(bubble.top)
+                        end.linkTo(bubble.end)
+                        bottom.linkTo(bubbleLayout.bottom)
+                        height = Dimension.fillToConstraints
+                        width = Dimension.fillToConstraints
+                    }
+                    .background(color = MaterialTheme.colorScheme.surface, CircleShape)
             )
             FloatingBubble(
                 modifier = Modifier
@@ -480,7 +497,8 @@ fun PreviewFloatingBubble() {
                     }
                 }
             }
-            AnimatedVisibility(visible = (false),
+            AnimatedVisibility(
+                visible = (false),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier
@@ -492,7 +510,8 @@ fun PreviewFloatingBubble() {
                     }) {
                 MenuItems(onItemClick = { })
             }
-            AnimatedVisibility(visible = (true),
+            AnimatedVisibility(
+                visible = (true),
                 enter = fadeIn(),
                 exit = fadeOut(),
                 modifier = Modifier

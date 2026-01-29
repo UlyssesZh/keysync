@@ -14,7 +14,7 @@ data class AppConfig(
     val deleteDataOnRemove: Boolean = Default.deleteDataOnRemove,
     val themePreference: ThemePreference = Default.themePreference,
     val cancellableTouchMode: TouchMode = Default.cancellableTouchMode,
-    val scopeTouchMode: TouchMode = Default.scopeTouchMode,
+    val normalBtnTouchMode: TouchMode = Default.normalBtnTouchMode,
 ) {
     companion object {
         val Default = AppConfig(
@@ -25,7 +25,7 @@ data class AppConfig(
             deleteDataOnRemove = false,
             themePreference = ThemePreference.SYSTEM_DYNAMIC,
             cancellableTouchMode = TouchMode.TAP,
-            scopeTouchMode = TouchMode.TAP
+            normalBtnTouchMode = TouchMode.TAP
         )
     }
 

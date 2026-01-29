@@ -8,8 +8,6 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.WindowManager
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.toOffset
 import androidx.core.view.WindowInsetsCompat
 import androidx.datastore.preferences.core.Preferences
 import com.devoid.keysync.data.local.DataStoreManager
@@ -55,13 +53,13 @@ class FloatingWindowStateManager @Inject constructor(
     val isBubbleExpanded = _isBubbleExpanded.asStateFlow()
 
     private val _mousePointerOffset =
-        MutableStateFlow(IntOffset(displayMetrics.widthPixels / 2, displayMetrics.heightPixels / 2))
+        MutableStateFlow(Offset(displayMetrics.widthPixels / 2f, displayMetrics.heightPixels / 2f))
     val pointerOffset = _mousePointerOffset.asStateFlow()
 
     private val _containerItems = MutableStateFlow(listOf<DraggableItem>())
     val containerItems = _containerItems.asStateFlow()
 
-    val isShootingMode = eventHandler.isShootingMode
+    val isShootingMode = eventHandler.shootingModeFlow
 
     init {
         scope.launch {
@@ -78,7 +76,8 @@ class FloatingWindowStateManager @Inject constructor(
         }
         scope.launch {
             _appConfig.value = dataStoreManager.getKeyConfig(DataStoreManager.KEYS_CONFIG).first()
-            eventHandler.setTouchMode(_appConfig.value.cancellableTouchMode)
+            eventHandler.setCancelableTouchMode(_appConfig.value.cancellableTouchMode)
+            eventHandler.setNormalBtnTouchMode(_appConfig.value.normalBtnTouchMode)
             eventHandler.appConfig = _appConfig.value
         }
 
@@ -174,7 +173,7 @@ class FloatingWindowStateManager @Inject constructor(
         when (motionEvent.action) {
 
             MotionEvent.ACTION_BUTTON_PRESS -> {
-                eventHandler.mousePointerPosition = pointerOffset.value.toOffset()
+                eventHandler.mousePointerPosition = pointerOffset.value
                 eventHandler.handleMouseButton(motionEvent.actionButton, true)
             }
 
@@ -183,18 +182,18 @@ class FloatingWindowStateManager @Inject constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
-                val offset = IntOffset(
-                    motionEvent.rawX.toInt(),
-                    motionEvent.rawY.toInt()
+                val offset = Offset(
+                    motionEvent.rawX,
+                    motionEvent.rawY
                 ) * sensitivity
                 if (!isShootingMode.value) {
                     val position = _mousePointerOffset.value + offset
-                    _mousePointerOffset.value = IntOffset(
-                        position.x.coerceIn(0, displayMetrics.widthPixels),
-                        position.y.coerceIn(0, displayMetrics.heightPixels)
+                    _mousePointerOffset.value = Offset(
+                        position.x.coerceIn(0f, displayMetrics.widthPixels.toFloat()),
+                        position.y.coerceIn(0f, displayMetrics.heightPixels.toFloat())
                     )
                 }
-                return eventHandler.handlePointerMove(offset.toOffset())
+                return eventHandler.handlePointerMove(offset)
 
             }
         }
