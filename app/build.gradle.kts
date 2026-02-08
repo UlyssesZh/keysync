@@ -29,8 +29,8 @@ android {
         applicationId = "com.devoid.keysync"
         minSdk = 29
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.4-beta"
+        versionCode = 5
+        versionName = "1.41-beta"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

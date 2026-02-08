@@ -59,10 +59,6 @@ necessary permissions and maps key events from external input devices to on-scre
 ![Screenshot](app/screenshots/20250316_142134.jpg)
 ![Screenshot](app/screenshots/20250316_142553.jpg)
 
-Nice project 👍
-Below are **clean, GitHub-style sections** you can **directly paste** into your README.
-They’re written for **Android + Shizuku users**, not generic boilerplate.
-
 ---
 
 ## 🛠️ Build It Yourself

@@ -6,7 +6,6 @@ import android.view.MotionEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.nativeKeyCode
-import androidx.compose.ui.text.rememberTextMeasurer
 import com.devoid.keysync.model.AppConfig
 import com.devoid.keysync.model.DraggableItem
 import com.devoid.keysync.model.DraggableItemType
@@ -470,8 +469,8 @@ class EventHandler(
 
     private val keyMap = HashMap<Int, KeyMap>(64)
 
-    private val pressed = BooleanArray(64)
-    private val cancelToggle = BooleanArray(64)
+    private val pressed = BooleanArray(338)
+    private val cancelToggle = BooleanArray(338)
     private val pointerIds = IntArray(512) { -1 }
 
     private var wasdMask = 0
@@ -575,7 +574,7 @@ class EventHandler(
 
         keyMap[wasdMask]?.let {
             val wasActive = lastWasdMask != 0
-            val isCombo = wasdMask.countOneBits() > 1
+//            val isCombo = wasdMask.countOneBits() > 1
 
             if (wasActive) {
                 // gesture already exists → transform
