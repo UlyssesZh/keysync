@@ -4,6 +4,13 @@ KeySync is an Android app that allows users to play games using an external keyb
 without requiring root access. It leverages [Shizuku](https://github.com/RikkaApps/Shizuku) to grant
 necessary permissions and maps key events from external input devices to on-screen touch points.
 
+> [!TIP]
+> ## Experimental Native Input
+>
+> Work is in progress on an experimental branch **[feature/native](https://github.com/aka-munan/keysync/tree/feature/native)** introducing native input handling to reduce reliance on floating windows and UI-based listeners. Snapshot builds are available for testing, and changes will be merged into `main` once stable.
+
+---
+
 ## Features
 
 - 🎮 **Keyboard & Mouse Support** - Play mobile games with a keyboard and mouse.
